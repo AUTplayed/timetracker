@@ -1,0 +1,15 @@
+#link,.link,.linkstyle {
+	padding-left: 10px;
+}
+
+#add,#rm {
+	width: 100%;
+}
+
+.duration {
+	width: 80px;
+}
+
+.title {
+	text-decoration: underline;
+}

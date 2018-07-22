@@ -1,0 +1,53 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<table>
+	<tr>
+		<th colspan="3" class="title">Day</th>
+	</tr>
+	<tr>
+		<th>Start</th>
+		<th>End</th>
+		<th>Duration</th>
+		<th class="linkstyle">Link</th>
+	</tr>
+	<tr>
+		<td>
+			<input type="time" id="begin">
+		</td>
+		<td>
+			<input type="time" id="end">
+		</td>
+		<td id="duration"></td>
+		<td id="link"></td>
+	</tr>
+</table>
+<hr>
+<table>
+	<tbody id="times">
+		<tr>
+			<th colspan="3" class="title">Tasks</th>
+		</tr>
+		<tr>
+			<th>Start</th>
+			<th>End</th>
+			<th>Task</th>
+			<th>Duration</th>
+			<th class="linkstyle">Link</th>
+		</tr>
+		<tr id="insb">
+			<td colspan="4">
+				<input type="button" value="+" id="add">
+			</td>
+		</tr>
+		<tr>
+			<td colspan="4">
+				<input type="button" value="-" id="rm">
+			</td>
+		</tr>
+	</tbody>
+</table>
+<input type="button" value="clear" id="clear">
+<footer>
+	<script type="text/javascript" src="script.js"></script>
+</footer>
