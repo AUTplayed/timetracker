@@ -2,10 +2,14 @@ var $ = document.querySelector.bind(document);
 var $$ = document.querySelectorAll.bind(document);
 
 var tzo = 3600000;
+var jiraurl = "https://$1$2$3"; // $1 = task | $2 = date (yyyyMMddHHmm) | $3 = timeSeconds
+var tturl = "https://$1$2"; // $1 = startTime (yyyyMMddHHmm) | $2 = endtime (yyyyMMddHHmm)
+var today = new Date();
 
 var begin = $("#begin");
 var end = $("#end");
 var duration = $("#duration");
+var link = $("#link");
 var add = $("#add");
 var rm = $("#rm");
 var clear = $("#clear");
@@ -20,7 +24,7 @@ add.onclick = addTask;
 rm.onclick = rmTd;
 clear.onclick = () => {
 	document.cookie = "{}";
-	$$("#times > .task").forEach(t => times.removeChild(t));
+	$$("#times > .taskrow").forEach(t => times.removeChild(t));
 	restore();
 }
 
@@ -32,6 +36,8 @@ function calcDuration() {
 	if (_time > 6) _time -= 0.5;
 	duration.innerHTML = _time + "h";
 	save();
+	if (!begin.value || !end.value) return;
+	link.innerHTML = `<a href="${buildLink(tturl, formatDate(new Date(begin.valueAsNumber - tzo)), formatDate(new Date(end.valueAsNumber - tzo)))}">timetracking</a>`;
 }
 
 function calcTask(e) {
@@ -67,12 +73,23 @@ function calcTask(e) {
 		_end.valueAsDate = new Date(_tempdate.getTime() + tzo);
 	}
 	_duration.value = getHours(new Date(_end.valueAsNumber - _begin.valueAsNumber - tzo));
+	calcTaskLink(_link, _task, parseFloat(_duration.value));
 	save();
+}
+
+var tasktime = [];
+
+function calcTaskLink(_link, _task, _duration) {
+	if (!_link || !_task.value || !_duration) return;
+	if (_task.value.startsWith("http")) {
+		_task.value = _task.value.split("/").pop();
+	}
+	_link.innerHTML = `<a href="${buildLink(jiraurl, _task.value, formatDate(today), _duration * 60 * 60)}">jira</a>`;
 }
 
 function addTask(data) {
 	var _row = document.createElement("tr");
-	_row.className = "task";
+	_row.className = "taskrow";
 	_row.appendChild(addTd("time", "begin", data.begin));
 	_row.appendChild(addTd("time", "end", data.end));
 	_row.appendChild(addTd("text", "task", data.task));
@@ -81,7 +98,8 @@ function addTask(data) {
 	_link.className = "link";
 	_row.appendChild(_link);
 	times.insertBefore(_row, insb);
-	$$(".begin,.end,.duration").forEach(e => e.onchange = calcTask);
+	$$(".task,.duration").forEach(e => e.onchange = calcTask);
+	$$(".begin,.end").forEach(e => e.onblur = calcTask);
 	calcTask({ row: _row, target: { className: "begin" } });
 }
 
@@ -106,7 +124,7 @@ function save() {
 	data.begin = begin.value;
 	data.end = end.value;
 	data.tasks = [];
-	var _tasks = $$("#times > .task");
+	var _tasks = $$("#times > .taskrow");
 	for (var i = 0; i < _tasks.length; i++) {
 		var _tr = _tasks[i];
 		var _begin = _tr.querySelector(".begin").value;
@@ -144,4 +162,24 @@ function setHours(_date, _hours) {
 	var _hours = _hours - _minutes;
 	_date.setMinutes(_minutes * 60);
 	_date.setHours(_hours);
+}
+
+function buildLink(template) {
+	for (var i = 1; i < arguments.length; i++) {
+		template = template.replace("\$" + i, arguments[i]);
+	}
+	return template;
+}
+
+function formatDate(date) {
+	return `${pad(today.getFullYear(), 4)}${pad(today.getMonth() + 1, 2)}${pad(today.getDate(), 2)}${pad(date.getHours(), 2)}${pad(date.getMinutes(), 2)}`;
+}
+
+function pad(value, digits) {
+	value = Math.round(value).toString();
+	var _length = value.length;
+	for (var i = _length; i < digits; i++) {
+		value = "0" + value;
+	}
+	return value;
 }
