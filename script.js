@@ -27,7 +27,8 @@ clear.onclick = () => {
 restore();
 
 function calcDuration() {
-	var _time = new Date(end.valueAsNumber - begin.valueAsNumber - tzo).getHours();
+	var _time = new Date(end.valueAsNumber - begin.valueAsNumber - tzo);
+	_time = _time.getMinutes() / 60 + _time.getHours();
 	if (_time > 6) _time -= 0.5;
 	duration.innerHTML = _time + "h";
 	save();
@@ -54,18 +55,18 @@ function calcTask(e) {
 	if (_end.value == "") {
 		_end.value = _nextbegin.value;
 	}
-	if (parseFloat(_duration.value) > new Date(end.valueAsNumber - begin.valueAsNumber - tzo).getHours()) {
+	if (parseFloat(_duration.value) > getHours(new Date(end.valueAsNumber - begin.valueAsNumber - tzo))) {
 		_end.valueAsDate = end.valueAsDate;
 	} else {
 		if (e.target.className == "end" || e.target.className == "begin") {
-			_duration.value = new Date(_end.valueAsNumber - _begin.valueAsNumber - tzo).getHours();
+			_duration.value = getHours(new Date(_end.valueAsNumber - _begin.valueAsNumber - tzo));
 		}
 		var _tempdate = new Date(_begin.valueAsNumber - tzo);
 		if (_duration.value != "")
-			_tempdate.setHours(_tempdate.getHours() + parseFloat(_duration.value));
+			setHours(_tempdate, getHours(_tempdate) + parseFloat(_duration.value));
 		_end.valueAsDate = new Date(_tempdate.getTime() + tzo);
 	}
-	_duration.value = new Date(_end.valueAsNumber - _begin.valueAsNumber - tzo).getHours();
+	_duration.value = getHours(new Date(_end.valueAsNumber - _begin.valueAsNumber - tzo));
 	save();
 }
 
@@ -75,7 +76,7 @@ function addTask(data) {
 	_row.appendChild(addTd("time", "begin", data.begin));
 	_row.appendChild(addTd("time", "end", data.end));
 	_row.appendChild(addTd("text", "task", data.task));
-	_row.appendChild(addTd("number", "duration", ""));
+	_row.appendChild(addTd("number", "duration", "", 0.25));
 	var _link = document.createElement("td");
 	_link.className = "link";
 	_row.appendChild(_link);
@@ -84,12 +85,13 @@ function addTask(data) {
 	calcTask({ row: _row, target: { className: "begin" } });
 }
 
-function addTd(_type, _class, value) {
+function addTd(_type, _class, value, step) {
 	var _td = document.createElement("td");
 	var _input = document.createElement("input");
 	_input.type = _type;
 	_input.className = _class;
 	_input.value = value ? value : "";
+	step ? _input.step = step : undefined;
 	_td.appendChild(_input);
 	return _td;
 }
@@ -101,8 +103,8 @@ function rmTd() {
 
 function save() {
 	var data = {};
-	data.begin = begin.valueAsNumber;
-	data.end = end.valueAsNumber;
+	data.begin = begin.value;
+	data.end = end.value;
 	data.tasks = [];
 	var _tasks = $$("#times > .task");
 	for (var i = 0; i < _tasks.length; i++) {
@@ -116,14 +118,13 @@ function save() {
 }
 
 function restore() {
+	var data = {};
 	try {
-		JSON.parse(document.cookie);
+		data = JSON.parse(document.cookie);
 	} catch (e) {
-		document.cookie = "{}";
 	}
-	var data = JSON.parse(document.cookie);
-	begin.valueAsNumber = data.begin ? data.begin : 0;
-	end.valueAsNumber = data.end ? data.end : 0;
+	begin.value = data.begin ? data.begin : "";
+	end.value = data.end ? data.end : "";
 	if (data.tasks) {
 		data.tasks.forEach(task => {
 			addTask(task);
@@ -132,4 +133,15 @@ function restore() {
 		addTask({});
 	}
 	calcDuration();
+}
+
+function getHours(_date) {
+	return _date.getMinutes() / 60 + _date.getHours();
+}
+
+function setHours(_date, _hours) {
+	var _minutes = (_hours % 1);
+	var _hours = _hours - _minutes;
+	_date.setMinutes(_minutes * 60);
+	_date.setHours(_hours);
 }
