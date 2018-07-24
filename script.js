@@ -82,7 +82,7 @@ var tasktime = [];
 function calcTaskLink(_link, _task, _duration) {
 	if (!_link || !_task.value || !_duration) return;
 	if (_task.value.startsWith("http")) {
-		_task.value = _task.value.split("/").pop();
+		_task.value = _task.value.split("/").pop().split("\?").shift();
 	}
 	_link.innerHTML = `<a href="${buildLink(jiraurl, _task.value, formatDate(today), _duration * 60 * 60)}">jira</a>`;
 }
