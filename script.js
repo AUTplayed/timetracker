@@ -15,6 +15,7 @@ var rm = $("#rm");
 var clear = $("#clear");
 var times = $("#times");
 var insb = $("#insb");
+var day = $("#day");
 var rows = $$("#times > tr");
 
 begin.onchange = calcDuration;
@@ -29,6 +30,21 @@ clear.onclick = () => {
 }
 
 restore();
+
+day.valueAsDate = today;
+day.onblur = updateDay;
+
+function updateDay() {
+	today = day.valueAsDate;
+	calcDuration();
+	var _tasks = $$("#times > .taskrow");
+	_tasks.forEach(_tr => {
+		var _task = _tr.querySelector(".task");
+		var _duration = _tr.querySelector(".duration");
+		var _link = _tr.querySelector(".link");
+		calcTaskLink(_link, _task, parseFloat(_duration.value));
+	});
+}
 
 function calcDuration() {
 	var _time = new Date(end.valueAsNumber - begin.valueAsNumber - tzo);
@@ -147,7 +163,7 @@ function restore() {
 		data.tasks.forEach(task => {
 			addTask(task);
 		});
-	} else {
+	} else if($$("#times > .taskrow").length == 0){
 		addTask({});
 	}
 	calcDuration();
